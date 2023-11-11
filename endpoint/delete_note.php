@@ -9,17 +9,15 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['delete'])) {
     $stmt->bindParam(':note_id', $noteID);
 
     if ($stmt->execute()) {
+        echo "Note deleted successfully!";
         // Redirect back to the update.php page with a success message
-        header("Location: http://localhost/take-note-app/");
+        header("Location: ../index2.php");
         exit();
     } else {
+        echo "Failed to delete note. Please try again.";
         // Redirect back to the update.php page with an error message
-        header("Location: http://localhost/take-note-app/");
+        header("Location: ../index2.php");
         exit();
     }
-} else {
-    // Redirect to the update.php page if accessed directly or without a valid note ID
-    header("Location: http://localhost/take-note-app/");
-    exit();
 }
 ?>

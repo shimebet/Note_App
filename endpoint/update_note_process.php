@@ -14,10 +14,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $stmt->bindParam(':note', $noteContent);
 
     if ($stmt->execute()) {
-        header("Location: update_note.php?edit=$noteID");
-        exit();
+        header("Location: ../index2.php");  // Redirect to index2.php after successful update
+        exit();  // Exit to prevent further code execution
     } else {
         echo "Error updating note";
+        header("Location: ../index2.php");  // Redirect to index2.php in case of an error
+        exit();  // Exit to prevent further code execution
     }
 }
 ?>

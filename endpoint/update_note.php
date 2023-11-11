@@ -127,7 +127,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                             </div>
                            
                             <button type="submit" class="btn btn-secondary">Update</button>
-                            <a href="http://localhost/take-note-app/index2.php" class="btn btn-danger">Cancel</a>
+                            <a href="../index2.php" class="btn btn-danger">Cancel</a>
                         </form>
                     </div>
                 </div>

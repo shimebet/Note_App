@@ -29,6 +29,7 @@ function handleNoteSubmission(PDO $conn)
 }
 
 handleNoteSubmission($conn);
+$showChar = 100;
 ?>
 
 <!DOCTYPE html>
@@ -43,6 +44,8 @@ handleNoteSubmission($conn);
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
         integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
         crossorigin="anonymous">
+        <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
     <script src="jscolor.js"></script>
     <script src="jscolor.min.js"></script>
     <!-- Font Awesome -->
@@ -63,7 +66,7 @@ handleNoteSubmission($conn);
             max-height: 20em;
             overflow: hidden;
             text-overflow: ellipsis;
-            white-space: nowrap;
+            /* white-space: nowrap; */
         }
     </style>
 
@@ -177,7 +180,11 @@ handleNoteSubmission($conn);
                                                 class="fa fa-trash"></i></button>
                                     </div>
                                     <h3 style="text-transform: uppercase; color: <?php echo $noteColor; ?>;"><b><?php echo $noteTitle ?></b></h3>
-                                    <p class="note-content"><?php echo $noteContent ?></p>
+                                    <div id="note-container">
+                                        <p class="note-content"><?php echo nl2br(htmlspecialchars(substr($noteContent, 0, $showChar))); ?><span class="morecontent"><span><?php echo nl2br(htmlspecialchars(substr($noteContent, $showChar))); ?></span></span></p>
+                                        
+                                    </div>
+
                                     <small
                                         class="block text-muted text-info">Created: <i
                                             class="fa fa-clock-o text-info"></i> <?php echo $formattedDateTime ?></small>
@@ -195,11 +202,13 @@ handleNoteSubmission($conn);
     </div>
 
     <script>
-        function delete_note(id) {
-            if (confirm("Do you confirm to delete this note?")) {
-                window.location = "endpoint/delete_note.php?delete=" + id
-            }
-        }
+      function delete_note(id) {
+    if (confirm("Do you confirm to delete this note?")) {
+        console.log("Deleting note with ID: ", id);
+        window.location = "endpoint/delete_note.php?delete=" + id;
+    }
+}
+
     </script>
 
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
@@ -211,6 +220,51 @@ handleNoteSubmission($conn);
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"
         integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
         crossorigin="anonymous"></script>
+
+        <script>
+$(document).ready(function () {
+    var showChar = 100; // Adjust the number of characters to display initially
+    var ellipsestext = "...";
+    var moretext = "Read more";
+    var lesstext = "Read less";
+
+    $('.note-content').each(function () {
+        var content = $(this).html();
+
+        if (content.length > showChar) {
+            var c = content.substr(0, showChar);
+            var h = content.substr(showChar, content.length - showChar);
+
+            var html =
+                c +
+                '<span class="moreellipses">' +
+                ellipsestext +
+                '&nbsp;</span><span class="morecontent"><span>' +
+                h +
+                '</span>&nbsp;&nbsp;<a href="" class="morelink">' +
+                moretext +
+                '</a></span>';
+
+            $(this).html(html);
+        }
+    });
+
+    $(".morelink").click(function () {
+        var content = $(this).prev().find("span:first-child");
+        if ($(this).hasClass("less")) {
+            $(this).removeClass("less");
+            $(this).html(moretext);
+            content.toggle();
+        } else {
+            $(this).addClass("less");
+            $(this).html(lesstext);
+            content.toggle();
+        }
+        return false;
+    });
+});
+
+</script>
 
 </body>
 
