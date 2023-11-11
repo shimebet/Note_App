@@ -1,28 +1,34 @@
 <?php
-include('../conn/conn.php');
+include('conn/conn.php');
 
-// Check if the form is submitted
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    // Get the note ID from the form
-    $noteID = $_POST['note_id'];
+// Function to get the available note colors from the database
+function getNoteColors(PDO $conn)
+{
+    $stmt = $conn->query("SELECT DISTINCT color FROM tbl_notes");
+    return $stmt->fetchAll(PDO::FETCH_COLUMN);
+}
 
-    // Retrieve the note from the database based on the ID
-    $stmt = $conn->prepare("SELECT * FROM `tbl_notes` WHERE tbl_notes_id = :note_id");
-    $stmt->bindParam(':note_id', $noteID);
-    $stmt->execute();
-    $note = $stmt->fetch(PDO::FETCH_ASSOC);
-} else {
-    // If not submitted, get note ID from URL parameter
-    if (isset($_GET['edit'])) {
-        $noteID = $_GET['edit'];
+// Function to handle note submission
+function handleNoteSubmission(PDO $conn)
+{
+    if ($_SERVER["REQUEST_METHOD"] === "POST") {
+        $noteTitle = $_POST['note_title'];
+        $noteContent = $_POST['note_content'];
+        $noteColor = $_POST['note_color'];
 
-        // Retrieve the note from the database based on the ID
-        $stmt = $conn->prepare("SELECT * FROM `tbl_notes` WHERE tbl_notes_id = :note_id");
-        $stmt->bindParam(':note_id', $noteID);
+        // Use $noteColor in your database insertion logic
+        $stmt = $conn->prepare("INSERT INTO tbl_notes (note_title, note, color) VALUES (:title, :content, :color)");
+        $stmt->bindValue(':title', $noteTitle, PDO::PARAM_STR);
+        $stmt->bindValue(':content', $noteContent, PDO::PARAM_STR);
+        $stmt->bindValue(':color', $noteColor, PDO::PARAM_STR);
         $stmt->execute();
-        $note = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        header("Location: " . $_SERVER['REQUEST_URI']);
+        exit();
     }
 }
+
+handleNoteSubmission($conn);
 ?>
 
 <!DOCTYPE html>
@@ -30,26 +36,38 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Take-Note App</title>
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
         integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
         crossorigin="anonymous">
-
-    <!-- Spectrum Color Picker CSS -->
-    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.1/spectrum.min.css">
-
+    <script src="jscolor.js"></script>
+    <script src="jscolor.min.js"></script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
         integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-    <!-- Spectrum Color Picker JS -->
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.1/spectrum.min.js"></script>
-</head>
+    <style>
+        /* Custom CSS */
+        .main-panel,
+        .card {
+            margin: auto;
+            height: 90vh;
+            overflow-y: auto;
+        }
 
+        .note-content {
+            max-height: 20em;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
+
+</head>
 
 <body>
 
@@ -63,10 +81,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <form class="form-inline my-2 my-lg-0" method="get" action="<?php echo $_SERVER['PHP_SELF']; ?>">
-                        <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search"
-                            name="search_title" value="<?php echo isset($_GET['search_title']) ? $_GET['search_title'] : ''; ?>"
-                            style="width:300px">
+                    <form class="form-inline " method="get" action="">
+                        <input class="form-control mr-sm-2" type="search" placeholder="Search by Title"
+                            aria-label="Search" name="search_title" style="width:300px">
                         <button class="btn btn-outline-secondary my-2 my-sm-0" type="submit">Search</button>
                     </form>
                 </li>
@@ -78,7 +95,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                         <a class="dropdown-item" href="#">View Account</a>
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="#">Log Out</a>
+                        <a class="dropdown-item" href="logout.php">Log Out</a>
                     </div>
                 </li>
             </ul>
@@ -88,46 +105,31 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <div class="main-panel mt-4 ml-5 col-11">
         <div class="row">
 
-            <!-- Update Note -->
+            <!-- Add Note -->
             <div class="col-md-4 border-right">
                 <div class="card">
                     <div class="card-header">
-                        Update Note
+                        Add Note
                     </div>
                     <div class="card-body">
-                        <form method="post" action="update_note_process.php">
-                            <input type="hidden" name="note_id" value="<?php echo $note['tbl_notes_id']; ?>">
+                        <form method="post" action="index2.php">
                             <div class="form-group">
-    <label for="noteColor">Select Color</label>
-    <select class="form-control" id="noteColor" name="note_color">
-        <?php
-        // List of colors you want in the dropdown
-        $colorPalette = [
-            "#000", "#444", "#666", "#999", "#ccc", "#eee", "#f3f3f3", "#fff",
-            "#f00", "#f90", "#ff0", "#0f0", "#00f", "#90f", "#f0f", "#f00"
-        ];
-
-        foreach ($colorPalette as $color) {
-            $selected = ($note['color'] === $color) ? 'selected' : '';
-            echo "<option value=\"$color\" style=\"background-color: $color;\" $selected></option>";
-        }
-        ?>
-    </select>
-</div>
+                                <label for="noteColor">Select Color</label>
+                                <input class="form-control jscolor" id="noteColor" name="note_color" value="#000000">
+                            </div>
 
                             <div class="form-group">
                                 <label for="noteTitle">Title</label>
                                 <input type="text" class="form-control" id="noteTitle" name="note_title"
-                                    value="<?php echo $note['note_title']; ?>">
+                                    placeholder="Title">
+                                <small id="emailHelp" class="form-text text-muted">Title of your note</small>
                             </div>
                             <div class="form-group">
                                 <label for="note">Note</label>
                                 <textarea class="form-control" id="note" name="note_content"
-                                    rows="10"><?php echo $note['note']; ?></textarea>
+                                    rows="10"></textarea>
                             </div>
-                           
-                            <button type="submit" class="btn btn-secondary">Update</button>
-                            <a href="http://localhost/take-note-app/index2.php" class="btn btn-danger">Cancel</a>
+                            <button type="submit" class="btn btn-secondary">Submit</button>
                         </form>
                     </div>
                 </div>
@@ -136,20 +138,20 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             <!-- Update and Delete Notes -->
             <div class="col-md-8">
                 <div class="card">
-                    <!-- <div class="card-header">
+                    <div class="card-header">
                         Notes Details
-                        <a href="" class="float-right">View All Notes</a>
-                    </div> -->
+                        <a href="#" class="float-right">Actions</a>
+                    </div>
 
                     <div class="card-body">
                         <div class="data-item">
                             <ul class="list-group">
 
                                 <?php
-                                $searchTerm = isset($_GET['search_title']) ? $_GET['search_title'] : '';
+                                $searchTitle = isset($_GET['search_title']) ? $_GET['search_title'] : '';
 
-                                $stmt = $conn->prepare("SELECT * FROM `tbl_notes` WHERE `note_title` LIKE :searchTerm");
-                                $stmt->bindValue(':searchTerm', '%' . $searchTerm . '%', PDO::PARAM_STR);
+                                $stmt = $conn->prepare("SELECT * FROM tbl_notes WHERE note_title LIKE :searchTitle");
+                                $stmt->bindValue(':searchTitle', '%' . $searchTitle . '%', PDO::PARAM_STR);
                                 $stmt->execute();
 
                                 $result = $stmt->fetchAll();
@@ -159,6 +161,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                                     $noteTitle = $row['note_title'];
                                     $noteContent = $row['note'];
                                     $noteDateTime = $row['date_time'];
+                                    $noteColor = $row['color'];
 
                                     // Convert the date_time value to a formatted date and time string
                                     $formattedDateTime = date('F j, Y H:i A', strtotime($noteDateTime));
@@ -166,14 +169,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                                 <li class="list-group-item mt-2">
                                     <div class="btn-group float-right">
-                                        <a href="update_note.php?edit=<?php echo $noteID ?>"><button
+                                        <a href="endpoint/update_note.php?edit=<?php echo $noteID ?>"><button
                                                 type="button" class="btn btn-sm btn-light" title="Show"><i
                                                     class="fa fa-pencil"></i></button></a>
-                                        <a href="delete_note.php?delete=<?php echo $noteID ?>"><button
-                                                type="button" class="btn btn-sm btn-light" title="Remove"><i
-                                                    class="fa fa-trash"></i></button></a>
+                                        <button onclick="delete_note('<?php echo $noteID ?>')" type="button"
+                                            class="btn btn-sm btn-light" title="Remove"><i
+                                                class="fa fa-trash"></i></button>
                                     </div>
-                                    <h3 style="text-transform: uppercase; color: <?php echo $row['color']; ?>;"><b><?php echo $noteTitle ?></b></h3>
+                                    <h3 style="text-transform: uppercase; color: <?php echo $noteColor; ?>;"><b><?php echo $noteTitle ?></b></h3>
                                     <p class="note-content"><?php echo $noteContent ?></p>
                                     <small
                                         class="block text-muted text-info">Created: <i
@@ -190,6 +193,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             </div>
         </div>
     </div>
+
+    <script>
+        function delete_note(id) {
+            if (confirm("Do you confirm to delete this note?")) {
+                window.location = "endpoint/delete_note.php?delete=" + id
+            }
+        }
+    </script>
 
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
         integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"

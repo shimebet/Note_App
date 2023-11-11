@@ -26,7 +26,7 @@ if (isset($_POST['username'])) {
     if ($result) {
         $_SESSION['username'] = $username;
         // Redirect to user dashboard page
-        header("Location: index.php");
+        header("Location: index2.php");
     } else {
         echo "<div class='form'>
               <h3>Incorrect Username/password.</h3><br/>
