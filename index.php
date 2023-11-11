@@ -140,7 +140,7 @@ handleNoteSubmission($conn);
                 <div class="card">
                     <div class="card-header">
                         Notes Details
-                        <a href="all_notes.php" class="float-right">View All Notes</a>
+                        <a href="#" class="float-right">Actions</a>
                     </div>
 
                     <div class="card-body">

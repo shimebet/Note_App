@@ -38,31 +38,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
         crossorigin="anonymous">
 
+    <!-- Spectrum Color Picker CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.1/spectrum.min.css">
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
         integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-    <!-- JScolor -->
-    <script src="jscolor.js"></script>
-
-    <style>
-        /* Custom CSS */
-        .main-panel,
-        .card {
-            margin: auto;
-            height: 90vh;
-            overflow-y: auto;
-        }
-
-        .note-content {
-            max-height: 20em;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-    </style>
+    <!-- Spectrum Color Picker JS -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.1/spectrum.min.js"></script>
 </head>
+
 
 <body>
 
@@ -111,6 +98,24 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         <form method="post" action="update_note_process.php">
                             <input type="hidden" name="note_id" value="<?php echo $note['tbl_notes_id']; ?>">
                             <div class="form-group">
+    <label for="noteColor">Select Color</label>
+    <select class="form-control" id="noteColor" name="note_color">
+        <?php
+        // List of colors you want in the dropdown
+        $colorPalette = [
+            "#000", "#444", "#666", "#999", "#ccc", "#eee", "#f3f3f3", "#fff",
+            "#f00", "#f90", "#ff0", "#0f0", "#00f", "#90f", "#f0f", "#f00"
+        ];
+
+        foreach ($colorPalette as $color) {
+            $selected = ($note['color'] === $color) ? 'selected' : '';
+            echo "<option value=\"$color\" style=\"background-color: $color;\" $selected></option>";
+        }
+        ?>
+    </select>
+</div>
+
+                            <div class="form-group">
                                 <label for="noteTitle">Title</label>
                                 <input type="text" class="form-control" id="noteTitle" name="note_title"
                                     value="<?php echo $note['note_title']; ?>">
@@ -120,11 +125,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                                 <textarea class="form-control" id="note" name="note_content"
                                     rows="10"><?php echo $note['note']; ?></textarea>
                             </div>
-                            <div class="form-group">
-                                <label for="noteColor">Select Color</label>
-                                <input class="form-control jscolor" id="noteColor" name="note_color"
-                                    value="<?php echo $note['color']; ?>">
-                            </div>
+                           
                             <button type="submit" class="btn btn-secondary">Update</button>
                             <a href="http://localhost/take-note-app/" class="btn btn-danger">Cancel</a>
                         </form>
@@ -135,10 +136,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             <!-- Update and Delete Notes -->
             <div class="col-md-8">
                 <div class="card">
-                    <div class="card-header">
+                    <!-- <div class="card-header">
                         Notes Details
                         <a href="" class="float-right">View All Notes</a>
-                    </div>
+                    </div> -->
 
                     <div class="card-body">
                         <div class="data-item">

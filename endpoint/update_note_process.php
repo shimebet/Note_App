@@ -1,29 +1,23 @@
 <?php
 include('../conn/conn.php');
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $noteID = $_POST['note_id'];
-    $newTitle = $_POST['note_title'];
-    $newContent = $_POST['note_content'];
+    $noteColor = $_POST['note_color'];
+    $noteTitle = $_POST['note_title'];
+    $noteContent = $_POST['note_content'];
 
-    // Update the note in the database
-    $stmt = $conn->prepare("UPDATE `tbl_notes` SET note_title = :title, note = :content WHERE tbl_notes_id = :note_id");
-    $stmt->bindParam(':title', $newTitle);
-    $stmt->bindParam(':content', $newContent);
+    $stmt = $conn->prepare("UPDATE `tbl_notes` SET `color` = :color, `note_title` = :note_title, `note` = :note WHERE tbl_notes_id = :note_id");
     $stmt->bindParam(':note_id', $noteID);
+    $stmt->bindParam(':color', $noteColor);
+    $stmt->bindParam(':note_title', $noteTitle);
+    $stmt->bindParam(':note', $noteContent);
 
     if ($stmt->execute()) {
-        // Redirect to the update.php page with a success message
-        header("Location: http://localhost/take-note-app/");
+        header("Location: update_note.php?edit=$noteID");
         exit();
     } else {
-        // Redirect to the update.php page with an error message
-        header("Location: update_note.php?edit=$noteID&error=1");
-        exit();
+        echo "Error updating note";
     }
-} else {
-    // Redirect to the update.php page if accessed directly without submitting the form
-    header("Location: http://localhost/take-note-app/");
-    exit();
 }
 ?>
