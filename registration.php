@@ -1,9 +1,18 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="utf-8"/>
     <title>Registration</title>
     <link rel="stylesheet" href="style.css"/>
+    <style>
+        .success-popup {
+            color: green;
+        }
+
+        .error-popup {
+            color: red;
+        }
+    </style>
 </head>
 <body>
 <?php
@@ -34,26 +43,25 @@ if (isset($_POST['username'])) {
     // Execute the query
     $result = $stmt->execute();
 
-    if ($result) {
-        echo "<div class='form'>
-              <h3>You are registered successfully.</h3><br/>
-              <p class='link'>Click here to <a href='login.php'>Login</a></p>
-              </div>";
-    } else {
-        echo "<div class='form'>
-              <h3>Required fields are missing.</h3><br/>
-              <p class='link'>Click here to <a href='registration.php'>registration</a> again.</p>
-              </div>";
-    }
+    // Display a popup message based on the result
+    echo "<script>
+            if ($result) {
+                alert('Registration successful');
+                window.location.href = 'registration.php';
+            } else {
+                alert('Registration failed. Required fields are missing.');
+                window.location.href = 'registration.php';
+            }
+          </script>";
 } else {
 ?>
     <form class="form" action="" method="post">
         <h1 class="login-title">Registration</h1>
         <input type="text" class="login-input" name="username" placeholder="Username" required />
-        <input type="text" class="login-input" name="email" placeholder="Email Adress">
+        <input type="text" class="login-input" name="email" placeholder="Email Address">
         <input type="password" class="login-input" name="password" placeholder="Password">
         <input type="submit" name="submit" value="Register" class="login-button">
-        <p class="link">Already have an account? <a href="login.php">Login here</a></p>
+        <p class="link">Already have an account? <a href="index.php">Login here</a></p>
     </form>
 <?php
 }
