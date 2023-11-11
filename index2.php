@@ -181,8 +181,13 @@ $showChar = 100;
                                     </div>
                                     <h3 style="text-transform: uppercase; color: <?php echo $noteColor; ?>;"><b><?php echo $noteTitle ?></b></h3>
                                     <div id="note-container">
-                                        <p class="note-content"><?php echo nl2br(htmlspecialchars(substr($noteContent, 0, $showChar))); ?><span class="morecontent"><span><?php echo nl2br(htmlspecialchars(substr($noteContent, $showChar))); ?></span></span></p>
-                                        
+                                    <p class="note-content" style="color: <?php echo $noteColor; ?>;">
+    <?php echo nl2br(htmlspecialchars(substr($noteContent, 0, $showChar))); ?>
+    <span class="morecontent">
+        <span><?php echo nl2br(htmlspecialchars(substr($noteContent, $showChar))); ?></span>
+    </span>
+</p>
+
                                     </div>
 
                                     <small
